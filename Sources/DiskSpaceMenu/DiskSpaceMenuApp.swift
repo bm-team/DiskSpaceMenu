@@ -5,16 +5,16 @@ private func menuBarAmount(_ bytes: UInt64) -> String {
 }
 
 private func menuBarStatus(_ volume: DiskVolume?) -> String {
-    guard let volume else { return "З — · С —" }
+    guard let volume else { return "—/—" }
 
-    if volume.used >= 1_000_000_000, volume.used < 1_000_000_000_000,
+    if volume.total >= 1_000_000_000, volume.total < 1_000_000_000_000,
        volume.free >= 1_000_000_000, volume.free < 1_000_000_000_000 {
-        let used = menuBarAmount(volume.used).replacingOccurrences(of: "ГБ", with: "")
+        let total = menuBarAmount(volume.total).replacingOccurrences(of: "ГБ", with: "")
         let free = menuBarAmount(volume.free).replacingOccurrences(of: "ГБ", with: "")
-        return "З \(used) · С \(free) ГБ"
+        return "\(total)/\(free) ГБ"
     }
 
-    return "З \(menuBarAmount(volume.used)) · С \(menuBarAmount(volume.free))"
+    return "\(menuBarAmount(volume.total))/\(menuBarAmount(volume.free))"
 }
 
 @main
@@ -25,17 +25,14 @@ struct DiskSpaceMenuApp: App {
         MenuBarExtra {
             DiskPanel(store: store)
         } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "internaldrive")
-                Text(menuBarStatus(store.internalVolume))
-                    .font(.system(size: 11, weight: .medium))
-                    .monospacedDigit()
-            }
-            .fixedSize()
-            .help("Внутренний диск: З — занято, С — свободно")
-            .accessibilityLabel(store.internalVolume.map {
-                "Внутренний диск: занято \(amount($0.used)), свободно \(amount($0.free))"
-            } ?? "Внутренний диск недоступен")
+            Text(menuBarStatus(store.internalVolume))
+                .font(.system(size: 10, weight: .regular))
+                .monospacedDigit()
+                .fixedSize()
+                .help("Внутренний диск: ёмкость тома / свободно")
+                .accessibilityLabel(store.internalVolume.map {
+                    "Внутренний диск: ёмкость тома \(amount($0.total)), свободно \(amount($0.free))"
+                } ?? "Внутренний диск недоступен")
         }
         .menuBarExtraStyle(.window)
     }
