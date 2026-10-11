@@ -46,14 +46,14 @@ struct DiskPanel: View {
                         }
                         ProgressView(value: Double(volume.used), total: Double(volume.total))
                         HStack(alignment: .firstTextBaseline) {
-                            metric("Ёмкость", volume.total)
+                            metric("Ёмкость тома", volume.total)
                             Spacer(minLength: 6)
                             metric("Занято", volume.used)
                             Spacer(minLength: 6)
                             metric("Свободно", volume.free)
                         }
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("\(volume.name). Ёмкость \(amount(volume.total)), занято \(amount(volume.used)), свободно \(amount(volume.free))")
+                        .accessibilityLabel("\(volume.name). Ёмкость тома \(amount(volume.total)), занято \(amount(volume.used)), свободно \(amount(volume.free))")
                     }
                     if volume.id != store.volumes.last?.id { Divider() }
                 }
