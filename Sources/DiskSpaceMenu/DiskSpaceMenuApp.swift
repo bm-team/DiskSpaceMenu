@@ -10,6 +10,7 @@ struct DiskSpaceMenuApp: App {
         } label: {
             Label(store.internalVolume.map { amount($0.free) } ?? "—", systemImage: "internaldrive")
                 .help("Свободно на внутреннем диске")
+                .accessibilityLabel("Свободно на внутреннем диске: \(store.internalVolume.map { amount($0.free) } ?? "недоступно")")
         }
         .menuBarExtraStyle(.window)
     }

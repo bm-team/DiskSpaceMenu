@@ -29,6 +29,7 @@ struct DiskPanel: View {
                 Button { store.refresh() } label: { Image(systemName: "arrow.clockwise") }
                     .buttonStyle(.borderless)
                     .help("Обновить")
+                    .accessibilityLabel("Обновить сведения о дисках")
             }
             if store.volumes.isEmpty {
                 Text(store.updating ? "Загрузка…" : "Диски недоступны")
