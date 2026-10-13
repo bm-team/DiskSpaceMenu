@@ -18,6 +18,7 @@ func amount(_ bytes: UInt64) -> String {
 
 struct DiskPanel: View {
     @ObservedObject var store: DiskStore
+    @ObservedObject var displaySettings: StatusDisplaySettings
     @State private var launchAtLogin = false
     @State private var loginError: String?
 
@@ -57,6 +58,37 @@ struct DiskPanel: View {
                     }
                     if volume.id != store.volumes.last?.id { Divider() }
                 }
+            }
+            Divider()
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Индикатор в строке меню")
+                    .font(.subheadline).fontWeight(.medium)
+                Picker("Расположение чисел", selection: $displaySettings.layout) {
+                    Text("Одна строка").tag(StatusLayout.oneLine)
+                    Text("Две строки").tag(StatusLayout.twoLines)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                HStack {
+                    Text("Размер цифр")
+                    Slider(
+                        value: Binding(
+                            get: { displaySettings.activeSize },
+                            set: { displaySettings.activeSize = $0 }
+                        ),
+                        in: displaySettings.activeSizeRange,
+                        step: 1
+                    )
+                    Text("\(Int(displaySettings.activeSize)) pt")
+                        .monospacedDigit()
+                        .frame(width: 38, alignment: .trailing)
+                }
+                .font(.caption)
+                Text(displaySettings.layout == .oneLine
+                     ? "Ёмкость / свободно (в ГБ)"
+                     : "Ёмкость сверху, свободно снизу (в ГБ)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Divider()
             Toggle("Открывать при входе", isOn: Binding(

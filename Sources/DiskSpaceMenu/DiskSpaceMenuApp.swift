@@ -6,7 +6,7 @@ final class DiskSpaceAppDelegate: NSObject, NSApplicationDelegate {
     private var statusBar: DiskStatusBar?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        statusBar = DiskStatusBar(store: DiskStore())
+        statusBar = DiskStatusBar(store: DiskStore(), displaySettings: StatusDisplaySettings())
     }
 }
 

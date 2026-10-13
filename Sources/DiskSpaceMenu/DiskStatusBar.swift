@@ -5,54 +5,47 @@ import SwiftUI
 @MainActor
 final class DiskStatusBar: NSObject {
     private let store: DiskStore
+    private let displaySettings: StatusDisplaySettings
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
     private var volumeSubscription: AnyCancellable?
+    private var settingsSubscription: AnyCancellable?
 
-    init(store: DiskStore) {
+    init(store: DiskStore, displaySettings: StatusDisplaySettings) {
         self.store = store
+        self.displaySettings = displaySettings
         super.init()
 
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: DiskPanel(store: store))
+        popover.contentViewController = NSHostingController(rootView: DiskPanel(store: store, displaySettings: displaySettings))
 
         if let button = statusItem.button {
-            let icon = NSImage(systemSymbolName: "internaldrive", accessibilityDescription: "Диск")
-            icon?.size = NSSize(width: 11, height: 11)
-            icon?.isTemplate = true
-            button.image = icon
-            button.imagePosition = .imageLeft
-            button.imageScaling = .scaleProportionallyDown
+            button.imagePosition = .imageOnly
+            button.imageScaling = .scaleNone
             button.target = self
             button.action = #selector(togglePopover)
             button.toolTip = "Ёмкость внутреннего тома / свободное место"
         }
 
         volumeSubscription = store.$volumes.sink { [weak self] volumes in
-            self?.updateLabel(with: volumes.first(where: \.isInternal))
+            guard let self else { return }
+            self.updateLabel(with: volumes.first(where: \.isInternal),
+                             layout: self.displaySettings.layout, fontSize: self.displaySettings.activeSize)
+        }
+        settingsSubscription = Publishers.CombineLatest3(
+            displaySettings.$layout, displaySettings.$oneLineSize, displaySettings.$twoLineSize
+        ).sink { [weak self] layout, oneLineSize, twoLineSize in
+            guard let self else { return }
+            self.updateLabel(with: self.store.internalVolume, layout: layout,
+                             fontSize: layout == .oneLine ? oneLineSize : twoLineSize)
         }
     }
 
-    private func updateLabel(with volume: DiskVolume?) {
-        let font = NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .regular)
-        statusItem.button?.attributedTitle = NSAttributedString(
-            string: Self.shortStatus(volume),
-            attributes: [.font: font, .foregroundColor: NSColor.labelColor]
-        )
+    private func updateLabel(with volume: DiskVolume?, layout: StatusLayout, fontSize: Double) {
+        statusItem.button?.image = StatusBadgeRenderer.image(for: volume, layout: layout, fontSize: fontSize)
         statusItem.button?.setAccessibilityLabel(volume.map {
             "Внутренний диск: ёмкость тома \(amount($0.total)), свободно \(amount($0.free))"
         } ?? "Внутренний диск недоступен")
-    }
-
-    private static func shortStatus(_ volume: DiskVolume?) -> String {
-        guard let volume else { return "—/—" }
-
-        let total = amount(volume.total).replacingOccurrences(of: " ", with: "")
-        let free = amount(volume.free).replacingOccurrences(of: " ", with: "")
-        if total.hasSuffix("ГБ"), free.hasSuffix("ГБ") {
-            return "\(total.dropLast(2))/\(free.dropLast(2))ГБ"
-        }
-        return "\(total)/\(free)"
     }
 
     @objc private func togglePopover() {

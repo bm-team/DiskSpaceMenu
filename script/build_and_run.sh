@@ -5,6 +5,7 @@ MODE="${1:-run}"
 APP_NAME="DiskSpaceMenu"
 BUNDLE_ID="com.badmonkey.DiskSpaceMenu"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+APP_VERSION="$(cat "$ROOT_DIR/VERSION")"
 APP_BUNDLE="$ROOT_DIR/dist/$APP_NAME.app"
 APP_BINARY="$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 
@@ -29,6 +30,8 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<PLIST
 <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
 <key>CFBundleName</key><string>Место на дисках</string>
 <key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>$APP_VERSION</string>
+<key>CFBundleVersion</key><string>2</string>
 <key>LSMinimumSystemVersion</key><string>14.0</string>
 <key>NSPrincipalClass</key><string>NSApplication</string>
 <key>LSUIElement</key><true/>
